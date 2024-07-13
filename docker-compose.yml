@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  webapp-mysql:
+    image: mysql:8.3
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: application_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - ./mysql/db:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  webapp-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-container
+    links:
+      - webapp-mysql
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: webapp-mysql
+      MYSQL_ROOT_PASSWORD: password
+
+  webapp-php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php-container
+    volumes:
+      - ./php:/var/www/html
+    ports:
+      - "80:80"
+    depends_on:
+      - webapp-mysql
